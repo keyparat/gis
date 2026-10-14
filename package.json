@@ -1,0 +1,1 @@
+﻿{"name":"webgis-qgis-viewer","version":"1.0.0","description":"WebGIS QGIS Viewer - Deployment Ready for Vercel","main":"functions/server.js","scripts":{"dev":"node functions/server.js","start":"node functions/server.js","vercel":"vercel --prod"},"engines":{"node":">=18.0.0"},"license":"MIT"}
