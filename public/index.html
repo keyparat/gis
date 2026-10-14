@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebGIS Enterprise Studio | ArcGIS & QGIS Pro Web Viewer</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230079c1'/><path d='M30,70 L50,30 L70,70 Z' fill='none' stroke='white' stroke-width='8'/><circle cx='50' cy='30' r='6' fill='%2338bdf8'/></svg>">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+  <!-- Font Awesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- 1. Header / Navbar (ArcGIS Theme) -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-icon">
+        <i class="fa-solid fa-earth-asia"></i>
+      </div>
+      <div class="brand-title">
+        <span>WebGIS Studio</span>
+        <span class="brand-subtitle">ArcGIS &bull; QGIS</span>
+      </div>
+    </div>
+
+    <div class="header-toolbar">
+      <!-- Pencarian Global -->
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="search-input" placeholder="Cari lokasi, jalan, fasilitas..." autocomplete="off">
+        <div class="search-results-dropdown" id="search-dropdown"></div>
+      </div>
+
+      <!-- Toolbar Buttons -->
+      <button class="btn-tool" id="btn-toggle-attr-table" title="Buka / Ciutkan Tabel Atribut di Bawah">
+        <i class="fa-solid fa-table-list"></i>
+        <span>Tabel Atribut</span>
+      </button>
+
+      <button class="btn-tool" id="btn-open-upload" title="Import / Unggah file GeoJSON / JSON">
+        <i class="fa-solid fa-cloud-arrow-up"></i>
+        <span>Tambah Layer</span>
+      </button>
+
+      <button class="btn-tool" id="btn-reset-view" title="Kembali ke Pandangan Awal">
+        <i class="fa-solid fa-house"></i>
+      </button>
+
+      <button class="btn-tool" id="btn-fullscreen" title="Layar Penuh">
+        <i class="fa-solid fa-expand"></i>
+      </button>
+
+      <button class="btn-tool" id="btn-print-map" title="Cetak / Unduh Tampilan Peta">
+        <i class="fa-solid fa-print"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- 2. Container Utama -->
+  <main class="app-container">
+
+    <!-- Sidebar Multi-Tab ala ArcGIS -->
+    <aside class="sidebar" id="sidebar">
+      
+      <!-- Tab Header Navigasi -->
+      <div class="sidebar-tabs-bar">
+        <button class="sidebar-tab-btn active" data-tab="tab-layers" title="Daftar Lapisan & Legenda">
+          <i class="fa-solid fa-layer-group"></i>
+          <span>Lapisan</span>
+        </button>
+        <button class="sidebar-tab-btn" data-tab="tab-basemaps" title="Galeri Peta Dasar">
+          <i class="fa-solid fa-map"></i>
+          <span>Peta Dasar</span>
+        </button>
+        <button class="sidebar-tab-btn" data-tab="tab-bookmarks" title="Markah Spasial Lokasi">
+          <i class="fa-solid fa-bookmark"></i>
+          <span>Markah</span>
+        </button>
+        <button class="sidebar-tab-btn" data-tab="tab-measure" title="Alat Pengukuran Spasial">
+          <i class="fa-solid fa-ruler-combined"></i>
+          <span>Ukur</span>
+        </button>
+        <button class="sidebar-tab-btn" data-tab="tab-stats" title="Ringkasan Statistik Peta">
+          <i class="fa-solid fa-chart-pie"></i>
+          <span>Statistik</span>
+        </button>
+      </div>
+
+      <!-- Tab 1: Daftar Layer (TOC / Legend) -->
+      <div class="sidebar-tab-content active" id="tab-layers">
+        <div class="layer-quick-toolbar">
+          <input type="text" class="layer-filter-input" id="layer-filter-input" placeholder="Filter layer...">
+          <button class="layer-quick-btn" id="btn-show-all-layers" title="Tampilkan Semua Layer">
+            <i class="fa-solid fa-eye"></i> Semua
+          </button>
+          <button class="layer-quick-btn" id="btn-hide-all-layers" title="Sembunyikan Semua Layer">
+            <i class="fa-solid fa-eye-slash"></i> Sembunyi
+          </button>
+        </div>
+
+        <div class="layer-tree" id="layer-tree-container">
+          <!-- Dirender dinamis oleh app.js -->
+        </div>
+      </div>
+
+      <!-- Tab 2: Galeri Peta Dasar (Basemaps Gallery ala ArcGIS) -->
+      <div class="sidebar-tab-content" id="tab-basemaps">
+        <div class="basemap-gallery-container" id="basemap-gallery-container">
+          <!-- Dirender dinamis oleh app.js -->
+        </div>
+      </div>
+
+      <!-- Tab 3: Markah Spasial (Bookmarks) -->
+      <div class="sidebar-tab-content" id="tab-bookmarks">
+        <div class="bookmarks-container">
+          <button class="btn-primary" id="btn-open-add-bookmark" style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;">
+            <i class="fa-solid fa-bookmark"></i> Simpan Pandangan Ini
+          </button>
+          <div id="bookmarks-list-container" style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;">
+            <!-- Dirender dinamis oleh app.js -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 4: Alat Pengukuran Spasial (ArcGIS Measurement) -->
+      <div class="sidebar-tab-content" id="tab-measure">
+        <div class="measure-tab-container">
+          <p style="font-size: 0.8rem; color: #64748b;">Pilih jenis pengukuran spasial lalu klik titik-titik pada peta:</p>
+          <div class="measure-mode-selector">
+            <button class="measure-mode-btn active" data-mode="distance" id="btn-measure-dist">
+              <i class="fa-solid fa-ruler"></i>
+              <span>Jarak Lintasan</span>
+            </button>
+            <button class="measure-mode-btn" data-mode="area" id="btn-measure-area">
+              <i class="fa-solid fa-draw-polygon"></i>
+              <span>Luas Area</span>
+            </button>
+            <button class="measure-mode-btn" data-mode="coord" id="btn-measure-coord">
+              <i class="fa-solid fa-location-crosshairs"></i>
+              <span>Ambil Koordinat</span>
+            </button>
+          </div>
+
+          <div class="measure-result-card">
+            <span class="measure-result-label" id="measure-result-title">Hasil Pengukuran Jarak</span>
+            <span class="measure-result-val" id="measure-result-value">0.00 meter</span>
+            <span style="font-size: 0.72rem; color: #94a3b8;" id="measure-instructions">Klik pada peta untuk mulai mengukur</span>
+          </div>
+
+          <button class="btn-secondary" id="btn-reset-measure" style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+            <i class="fa-solid fa-trash-can"></i> Hapus Pengukuran
+          </button>
+        </div>
+      </div>
+
+      <!-- Tab 5: Statistik & Ringkasan Peta -->
+      <div class="sidebar-tab-content" id="tab-stats">
+        <div class="stats-tab-container">
+          <div class="stats-grid">
+            <div class="stats-card">
+              <span class="stats-card-val" id="stat-total-layers">0</span>
+              <span class="stats-card-label">Total Layer</span>
+            </div>
+            <div class="stats-card">
+              <span class="stats-card-val" id="stat-active-layers" style="color: var(--accent);">0</span>
+              <span class="stats-card-label">Layer Aktif</span>
+            </div>
+            <div class="stats-card">
+              <span class="stats-card-val" id="stat-total-features" style="color: #8e44ad;">0</span>
+              <span class="stats-card-label">Total Fitur/Objek</span>
+            </div>
+            <div class="stats-card">
+              <span class="stats-card-val" id="stat-current-zoom">14</span>
+              <span class="stats-card-label">Level Zoom</span>
+            </div>
+          </div>
+
+          <div class="stats-card" style="margin-top: 6px;">
+            <span style="font-size: 0.75rem; font-weight: 700; color: var(--secondary);">Sistem Koordinat & Proyeksi</span>
+            <span style="font-size: 0.8rem; color: var(--text-main); margin-top: 4px;">EPSG:4326 - WGS 84 (Geographic Lat/Lng)</span>
+            <span style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">Cocok untuk QGIS, ArcGIS Online, Leaflet, dan OpenLayers.</span>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- Tombol Pegangan Toggle Sidebar -->
+    <button class="sidebar-toggle-handle" id="sidebar-toggle-handle" title="Tampilkan / Sembunyikan Panel Lapisan">
+      <i class="fa-solid fa-chevron-left" id="toggle-icon"></i>
+    </button>
+
+    <!-- Map Canvas Area -->
+    <section class="map-canvas">
+      <!-- ArcGIS North Arrow (Mata Angin Kompas) -->
+      <div class="north-arrow-widget" id="north-arrow-widget" title="Arah Utara Peta">
+        <svg class="north-arrow-svg" viewBox="0 0 100 100">
+          <polygon points="50,10 65,50 50,42" fill="#c0392b" />
+          <polygon points="50,10 35,50 50,42" fill="#e74c3c" />
+          <polygon points="50,90 65,50 50,42" fill="#7f8c8d" />
+          <polygon points="50,90 35,50 50,42" fill="#bdc3c7" />
+          <text x="50" y="8" font-size="14" font-weight="900" text-anchor="middle" fill="#c0392b">N</text>
+        </svg>
+      </div>
+
+      <!-- Map Element -->
+      <div id="map"></div>
+
+      <!-- Floating Banner Pengukuran -->
+      <div class="measure-widget" id="measure-widget">
+        <i class="fa-solid fa-ruler" style="color: var(--primary);"></i>
+        <span class="measure-value" id="measure-output-text">Klik pada peta untuk mengukur</span>
+        <button class="btn-tool" id="btn-clear-measure" style="background: #e2e8f0; color: #334155; padding: 3px 8px; font-size: 0.75rem;">
+          <i class="fa-solid fa-trash-can"></i> Hapus
+        </button>
+      </div>
+    </section>
+
+    <!-- 3. Panel Dock Tabel Atribut Lapisan di Bawah (Persis QGIS & ArcGIS Table Dock) -->
+    <div class="attribute-dock collapsed" id="attribute-dock">
+      <!-- Header Dock / Handle Expand -->
+      <div class="attribute-dock-header" id="attr-dock-header">
+        <div class="attr-header-left">
+          <button class="btn-dock-toggle" id="btn-dock-toggle" title="Klik untuk Expand / Ciutkan Tabel Atribut">
+            <i class="fa-solid fa-chevron-up" id="attr-toggle-icon"></i>
+          </button>
+          <div class="attr-dock-title">
+            <i class="fa-solid fa-table-list" style="color: var(--primary);"></i>
+            <span>Tabel Atribut:</span>
+          </div>
+          <!-- Dropdown Pemilih Layer -->
+          <select id="attr-layer-select" class="attr-layer-select" title="Pilih Layer untuk dilihat datanya">
+            <!-- Diisi otomatis oleh JavaScript -->
+          </select>
+          <span class="attr-count-badge" id="attr-count-badge">0 objek</span>
+        </div>
+
+        <div class="attr-header-right">
+          <!-- Input Pencarian Dalam Tabel -->
+          <div class="attr-search-wrapper">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input type="text" class="attr-search-input" id="attr-search-input" placeholder="Cari dalam tabel..." autocomplete="off">
+          </div>
+          <button class="btn-icon" id="btn-dock-maximize" title="Layar Penuh Tabel Atribut">
+            <i class="fa-solid fa-up-right-and-down-left-from-center" id="attr-maximize-icon"></i>
+          </button>
+          <button class="btn-icon" id="btn-dock-close" title="Tutup / Sembunyikan Panel Tabel">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Isi Tabel Atribut -->
+      <div class="attribute-table-container" id="attribute-table-container">
+        <div id="attr-table-empty-msg" class="attr-empty-msg" style="display: none;">
+          <i class="fa-solid fa-circle-info"></i>
+          <span>Tidak ada layer aktif atau data kosong.</span>
+        </div>
+        <table class="attribute-table" id="attribute-table">
+          <thead id="attr-table-thead"></thead>
+          <tbody id="attr-table-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- 4. Status Bar Bawah -->
+  <footer class="status-bar">
+    <div class="status-left">
+      <div class="status-item clickable" id="status-btn-attr" title="Klik untuk membuka / menutup tabel atribut di bawah">
+        <i class="fa-solid fa-table-list" style="color: #38bdf8;"></i>
+        <span style="color: #38bdf8; font-weight: 600; text-decoration: underline; cursor: pointer;">Tabel Atribut Lapisan</span>
+      </div>
+      <div class="status-item">
+        <span>Koordinat:</span>
+        <b id="status-coord">-6.1850, 106.8290</b>
+      </div>
+      <div class="status-item">
+        <span>Zoom:</span>
+        <b id="status-zoom">14</b>
+      </div>
+      <div class="status-item">
+        <span>Proyeksi:</span>
+        <b>EPSG:4326 (WGS 84)</b>
+      </div>
+    </div>
+    <div class="status-right">
+      <div class="status-item">
+        <span>Platform:</span>
+        <b>WebGIS Enterprise Studio</b>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 5. Modal Konfirmasi Hapus Layer (Delete Layer Confirmation) -->
+  <div class="modal-overlay" id="modal-delete-layer">
+    <div class="modal-content" style="max-width: 440px;">
+      <div class="modal-header" style="background: #fef2f2; border-bottom-color: #fecaca;">
+        <div class="modal-title" style="color: var(--danger);">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <span>Hapus Layer</span>
+        </div>
+        <button class="btn-icon" id="btn-cancel-delete">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 0.9rem; color: #334155; line-height: 1.5;">
+          Apakah Anda yakin ingin menghapus layer <strong id="delete-layer-name-target" style="color: var(--danger);"></strong>?
+        </p>
+        <p style="font-size: 0.78rem; color: #64748b; line-height: 1.4;">
+          Layer akan dihilangkan dari peta, daftar lapisan, dan tabel atribut agar tampilan peta tetap rapi dan tidak menumpuk.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="btn-cancel-delete-2">Batal</button>
+        <button class="btn-danger" id="btn-confirm-delete">
+          <i class="fa-solid fa-trash-can"></i> Ya, Hapus Layer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. Modal Tambah Markah Spasial (Add Bookmark) -->
+  <div class="modal-overlay" id="modal-add-bookmark">
+    <div class="modal-content" style="max-width: 440px;">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fa-solid fa-bookmark" style="color: var(--primary);"></i>
+          <span>Simpan Markah Lokasi Baru</span>
+        </div>
+        <button class="btn-icon" id="btn-cancel-bookmark">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="input-bookmark-name">Nama Markah Lokasi:</label>
+          <input type="text" id="input-bookmark-name" placeholder="Contoh: Kawasan Bundaran HI">
+        </div>
+        <div class="form-group">
+          <label for="input-bookmark-desc">Deskripsi Singkat:</label>
+          <input type="text" id="input-bookmark-desc" placeholder="Contoh: Titik temu rute transportasi">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" id="btn-cancel-bookmark-2">Batal</button>
+        <button class="btn-primary" id="btn-confirm-bookmark">
+          <i class="fa-solid fa-check"></i> Simpan Markah
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. Modal Tambah Layer Multiformat (SHP, KML/KMZ, WMS, WFS, GeoJSON) -->
+  <div class="modal-overlay" id="upload-modal">
+    <div class="modal-content" style="max-width: 580px;">
+      <div class="modal-header">
+        <div class="modal-title">
+          <i class="fa-solid fa-cloud-arrow-up" style="color: var(--primary);"></i>
+          <span>Tambah Data Spasial & Layanan GIS</span>
+        </div>
+        <button class="btn-icon" id="btn-cancel-upload">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Navigasi Tab Modal Tambah Layer -->
+      <div class="modal-tabs-bar">
+        <button class="modal-tab-btn active" data-modaltab="pane-file">
+          <i class="fa-solid fa-file-zipper"></i>
+          <span>File (SHP, KML, KMZ, GeoJSON)</span>
+        </button>
+        <button class="modal-tab-btn" data-modaltab="pane-wms">
+          <i class="fa-solid fa-globe"></i>
+          <span>Layanan WMS</span>
+        </button>
+        <button class="modal-tab-btn" data-modaltab="pane-wfs">
+          <i class="fa-solid fa-bolt"></i>
+          <span>Layanan WFS</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        
+        <!-- Tab Pane 1: File Vektor (SHP, KML, KMZ, GeoJSON) -->
+        <div class="modal-tab-pane active" id="pane-file">
+          <p style="font-size: 0.8rem; color: #64748b; line-height: 1.4;">
+            Mendukung file <strong>Shapefile (.zip)</strong>, <strong>KML (.kml)</strong>, <strong>KMZ (.kmz)</strong>, dan <strong>GeoJSON (.geojson / .json)</strong>. Simbologi (warna, gambar pin, garis) akan diekstrak otomatis dari file!
+          </p>
+
+          <div class="drop-zone" id="file-drop-zone">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+            <p><strong>Klik untuk memilih file</strong> atau seret file ke sini</p>
+            <p style="font-size: 0.72rem; color: #94a3b8; margin-top: 4px;">Format: .zip (SHP), .kml, .kmz, .geojson, .json</p>
+            <input type="file" id="file-input" accept=".zip,.shp,.kml,.kmz,.geojson,.json" style="display: none;">
+          </div>
+
+          <div class="file-detect-card" id="file-detect-card" style="display: none;">
+            <div>
+              <span class="file-type-pill geojson" id="file-detected-type">GEOJSON</span>
+              <span style="font-weight: 600; margin-left: 6px;" id="file-detected-name">data.geojson</span>
+            </div>
+            <span style="font-size: 0.75rem; color: #64748b;" id="file-detected-count">0 fitur</span>
+          </div>
+
+          <!-- Alert Deteksi Koordinat Meter / TM-3 (Otomatis tampil jika data dalam koordinat proyeksi) -->
+          <div id="crs-detect-banner" style="display: none; background: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; padding: 10px 12px; margin-top: 10px;">
+            <div style="display: flex; align-items: flex-start; gap: 8px;">
+              <i class="fa-solid fa-triangle-exclamation" style="color: #d97706; margin-top: 2px; font-size: 1rem;"></i>
+              <div>
+                <strong style="color: #92400e; font-size: 0.8rem; display: block;">Koordinat Proyeksi Meter (TM-3° / UTM) Terdeteksi!</strong>
+                <p style="font-size: 0.73rem; color: #78350f; margin-top: 2px; line-height: 1.35;" id="crs-detect-msg">
+                  Data Anda menggunakan koordinat meter (misal TM-3° BPN atau UTM). WebGIS akan secara otomatis mereproyeksi ke WGS 84 (Derajat Lat/Lng) agar pas di peta.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pemilih Sistem Koordinat Asal (CRS / Proyeksi) -->
+          <div class="form-group" id="group-source-crs" style="margin-top: 10px;">
+            <label for="select-source-crs" style="display: flex; justify-content: space-between; align-items: center;">
+              <span>Sistem Koordinat Asal (CRS):</span>
+              <span style="font-size: 0.7rem; color: var(--primary); font-weight: 600;"><i class="fa-solid fa-earth-asia"></i> Support TM-3° BPN & UTM</span>
+            </label>
+            <select id="select-source-crs" style="width: 100%; padding: 8px 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 0.8rem; background: white; color: #1e293b; outline: none;">
+              <option value="AUTO" selected>Otomatis Deteksi (Auto-Detect / Asli)</option>
+              <optgroup label="Indonesia TM-3° (BPN / ATR) - Zonasi Standar">
+                <option value="TM3_46.2">TM-3 Zona 46.2 (Aceh Barat - MC 94.5°E) [EPSG:23830]</option>
+                <option value="TM3_47.1">TM-3 Zona 47.1 (Aceh Timur, Sumut Barat - MC 97.5°E) [EPSG:23831]</option>
+                <option value="TM3_47.2">TM-3 Zona 47.2 (Sumut Timur, Riau Barat, Sumbar - MC 100.5°E) [EPSG:23832]</option>
+                <option value="TM3_48.1">TM-3 Zona 48.1 (Riau Timur, Jambi, Sumsel Barat, Bengkulu - MC 103.5°E) [EPSG:23833]</option>
+                <option value="TM3_48.2">TM-3 Zona 48.2 (DKI Jakarta, Banten, Jabar Barat, Lampung - MC 106.5°E) [EPSG:23834]</option>
+                <option value="TM3_49.1">TM-3 Zona 49.1 (Jabar Timur, Jateng Barat, Kalbar - MC 109.5°E) [EPSG:23835]</option>
+                <option value="TM3_49.2">TM-3 Zona 49.2 (Jateng Timur, DIY, Jatim Barat, Kalteng - MC 112.5°E) [EPSG:23836]</option>
+                <option value="TM3_50.1">TM-3 Zona 50.1 (Jatim Timur, Madura, Bali, Kalsel - MC 115.5°E) [EPSG:23837]</option>
+                <option value="TM3_50.2">TM-3 Zona 50.2 (Lombok, Sumbawa, Kaltim, Sulbar - MC 118.5°E) [EPSG:23838]</option>
+                <option value="TM3_51.1">TM-3 Zona 51.1 (Flores Barat, Sumba, Sulsel, Sulteng - MC 121.5°E) [EPSG:23839]</option>
+                <option value="TM3_51.2">TM-3 Zona 51.2 (Flores Timur, Timor Barat, Sultra, Sulut - MC 124.5°E) [EPSG:23840]</option>
+                <option value="TM3_52.1">TM-3 Zona 52.1 (Maluku Utara, Halmahera Barat - MC 127.5°E) [EPSG:23841]</option>
+                <option value="TM3_52.2">TM-3 Zona 52.2 (Halmahera Timur, Seram, Ambon - MC 130.5°E) [EPSG:23842]</option>
+                <option value="TM3_53.1">TM-3 Zona 53.1 (Papua Barat Daya, Fakfak, Kaimana - MC 133.5°E) [EPSG:23843]</option>
+                <option value="TM3_53.2">TM-3 Zona 53.2 (Papua Barat, Nabire, Mimika - MC 136.5°E) [EPSG:23844]</option>
+                <option value="TM3_54.1">TM-3 Zona 54.1 (Papua Tengah, Jayapura Barat, Asmat - MC 139.5°E) [EPSG:23845]</option>
+                <option value="TM3_54.2">TM-3 Zona 54.2 (Papua, Jayapura Timur, Merauke - MC 142.5°E) [EPSG:23846]</option>
+              </optgroup>
+              <optgroup label="UTM WGS 84 Zona Selatan (Indonesia Selatan)">
+                <option value="UTM_46S">UTM Zona 46S (EPSG:32746 - Aceh / Sumut)</option>
+                <option value="UTM_47S">UTM Zona 47S (EPSG:32747 - Sumbar, Bengkulu, Sumsel)</option>
+                <option value="UTM_48S">UTM Zona 48S (EPSG:32748 - Lampung, Banten, DKI Jakarta, Jabar)</option>
+                <option value="UTM_49S">UTM Zona 49S (EPSG:32749 - Jateng, DIY, Jatim Barat)</option>
+                <option value="UTM_50S">UTM Zona 50S (EPSG:32750 - Jatim Timur, Bali, NTB)</option>
+                <option value="UTM_51S">UTM Zona 51S (EPSG:32751 - NTT, Sulsel, Sultra)</option>
+                <option value="UTM_52S">UTM Zona 52S (EPSG:32752 - Maluku, Papua Barat)</option>
+                <option value="UTM_53S">UTM Zona 53S (EPSG:32753 - Papua Selatan/Tengah)</option>
+                <option value="UTM_54S">UTM Zona 54S (EPSG:32754 - Merauke)</option>
+              </optgroup>
+              <optgroup label="UTM WGS 84 Zona Utara (Indonesia Utara)">
+                <option value="UTM_46N">UTM Zona 46N (EPSG:32646)</option>
+                <option value="UTM_47N">UTM Zona 47N (EPSG:32647)</option>
+                <option value="UTM_48N">UTM Zona 48N (EPSG:32648 - Riau, Kepri, Kalbar)</option>
+                <option value="UTM_49N">UTM Zona 49N (EPSG:32649 - Kalbar, Kalteng)</option>
+                <option value="UTM_50N">UTM Zona 50N (EPSG:32650 - Kaltim, Kaltara)</option>
+                <option value="UTM_51N">UTM Zona 51N (EPSG:32651 - Sulut, Gorontalo)</option>
+                <option value="UTM_52N">UTM Zona 52N (EPSG:32652 - Maluku Utara)</option>
+              </optgroup>
+              <optgroup label="Standar Internasional">
+                <option value="EPSG:4326">WGS 84 Geographic (EPSG:4326 - Derajat Lat/Long)</option>
+                <option value="EPSG:3857">WGS 84 Web Mercator (EPSG:3857 - Satuan Meter)</option>
+              </optgroup>
+            </select>
+            <span style="font-size: 0.72rem; color: #64748b; margin-top: 3px; display: block;">
+              Pilih zona TM-3° / UTM yang sesuai dengan lokasi survei atau biarkan Auto-Detect.
+            </span>
+          </div>
+
+          <!-- Opsi Simbologi Bawaan -->
+          <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 10px 12px; border-radius: 6px; display: flex; align-items: center; gap: 10px;">
+            <input type="checkbox" id="chk-use-file-symbology" checked style="width: 16px; height: 16px; accent-color: var(--primary); cursor: pointer;">
+            <label for="chk-use-file-symbology" style="font-size: 0.8rem; font-weight: 600; color: #166534; cursor: pointer;">
+              Gunakan Simbologi & Gaya Bawaan File (Pin/Icon, Warna, Garis, Isi)
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label for="input-layer-name">Nama Layer di WebGIS:</label>
+            <input type="text" id="input-layer-name" placeholder="Contoh: Kawasan Hutan Lindung">
+          </div>
+
+          <div class="form-group" id="group-fallback-color">
+            <label for="input-layer-color">Warna Cadangan (Jika file tidak memiliki warna bawaan):</label>
+            <input type="color" id="input-layer-color" value="#0079c1" style="height: 38px; cursor: pointer; padding: 2px;">
+          </div>
+        </div>
+
+        <!-- Tab Pane 2: Layanan WMS -->
+        <div class="modal-tab-pane" id="pane-wms">
+          <p style="font-size: 0.8rem; color: #64748b; line-height: 1.4;">
+            Hubungkan peta raster tematik dari server GIS (GeoServer, QGIS Server, MapServer, ArcGIS Enterprise). Simbologi dirender langsung sesuai SLD server!
+          </p>
+
+          <div class="form-group">
+            <label for="input-wms-url">URL Layanan WMS:</label>
+            <input type="text" id="input-wms-url" placeholder="https://domain-geoserver.com/geoserver/wms">
+          </div>
+
+          <div class="form-group">
+            <label for="input-wms-layers">Nama Layer WMS (Layers Parameter):</label>
+            <input type="text" id="input-wms-layers" placeholder="Contoh: workspace:nama_layer">
+          </div>
+
+          <div class="form-group">
+            <label for="input-wms-title">Judul Tampilan Layer:</label>
+            <input type="text" id="input-wms-title" placeholder="Contoh: Peta Penutupan Lahan Nasional">
+          </div>
+
+          <div class="preset-btn-group">
+            <span style="font-size: 0.72rem; color: #64748b; align-self: center; font-weight: 600;">Contoh Preset:</span>
+            <button type="button" class="btn-preset" id="preset-wms-1">
+              <i class="fa-solid fa-water"></i> GEBCO Bathymetry (Global)
+            </button>
+            <button type="button" class="btn-preset" id="preset-wms-2">
+              <i class="fa-solid fa-map-location-dot"></i> GeoServer US States
+            </button>
+          </div>
+        </div>
+
+        <!-- Tab Pane 3: Layanan WFS -->
+        <div class="modal-tab-pane" id="pane-wfs">
+          <p style="font-size: 0.8rem; color: #64748b; line-height: 1.4;">
+            Unduh data vektor langsung dari server WFS (GetFeature). Fitur akan dimasukkan ke tabel atribut dan peta dengan pop-up lengkap!
+          </p>
+
+          <div class="form-group">
+            <label for="input-wfs-url">URL Layanan WFS:</label>
+            <input type="text" id="input-wfs-url" placeholder="https://domain-geoserver.com/geoserver/wfs">
+          </div>
+
+          <div class="form-group">
+            <label for="input-wfs-typename">Feature Type Name (TypeName):</label>
+            <input type="text" id="input-wfs-typename" placeholder="Contoh: workspace:titik_fasilitas">
+          </div>
+
+          <div class="form-group">
+            <label for="input-wfs-title">Judul Tampilan Layer:</label>
+            <input type="text" id="input-wfs-title" placeholder="Contoh: Data Vektor WFS Terhubung">
+          </div>
+
+          <div class="preset-btn-group">
+            <span style="font-size: 0.72rem; color: #64748b; align-self: center; font-weight: 600;">Contoh Preset:</span>
+            <button type="button" class="btn-preset" id="preset-wfs-1">
+              <i class="fa-solid fa-network-wired"></i> Demo WFS OpenGeo
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-secondary" id="btn-cancel-upload-2">Batal</button>
+        <button class="btn-primary" id="btn-confirm-upload">
+          <i class="fa-solid fa-plus"></i> Tambahkan ke Peta
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. Floating Toast Container (Notifikasi Real-time) -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- Proj4js for Reprojection (TM-3, UTM, Web Mercator to WGS84) -->
+  <script src="js/proj4.js"></script>
+
+  <!-- JSZip (for KMZ & Shapefile ZIP decompression) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+  <!-- shpjs (for Shapefile .zip to GeoJSON conversion) -->
+  <script src="https://unpkg.com/shpjs@latest/dist/shp.js"></script>
+
+  <!-- @tmcw/togeojson (for KML/KMZ parsing) -->
+  <script src="https://unpkg.com/@tmcw/togeojson@5.8.1/dist/togeojson.umd.js"></script>
+
+  <!-- Data GeoJSON Contoh (Hasil Export QGIS) -->
+  <script src="js/data/batas_wilayah.js"></script>
+  <script src="js/data/penggunaan_lahan.js"></script>
+  <script src="js/data/jaringan_jalan.js"></script>
+  <script src="js/data/titik_fasilitas.js"></script>
+
+  <!-- Konfigurasi Layer, Peta Dasar, dan Markah -->
+  <script src="js/layers-config.js"></script>
+
+  <!-- Core GIS Application Engine -->
+  <script src="js/app.js"></script>
+
+</body>
+</html>
